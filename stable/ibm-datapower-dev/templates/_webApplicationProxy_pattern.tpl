@@ -3,9 +3,7 @@
 auto-startup.cfg: |
     top; configure terminal;
     
-    # Enable WebGUI Access
-    web-mgmt 0.0.0.0 9090 0
-    
+   
     # configuration generated Wed Sep 20 11:00:05 2017; firmware version 291101
 
     %if% available "domain-settings"
