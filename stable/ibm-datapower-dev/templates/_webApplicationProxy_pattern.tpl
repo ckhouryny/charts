@@ -6,6 +6,17 @@ auto-startup.cfg: |
    
     # configuration generated Wed Sep 20 11:00:05 2017; firmware version 291101
 
+# Enable WebGUI
+web-mgmt
+      admin-state True
+      local-address 0.0.0.0 
+      port 9090
+      save-config-overwrite 
+      idle-timeout 9000
+      ssl-config-type server
+exit
+
+
     %if% available "domain-settings"
 
     domain-settings
