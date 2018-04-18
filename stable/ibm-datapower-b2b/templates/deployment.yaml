@@ -1,0 +1,72 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    chart: {{ .Chart.Name}}-{{ .Chart.Version | replace "+" "_" }}
+    app: {{ template "fullname" . }}
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "fullname" . }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        stdin: true
+        tty: true
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory | quote }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu}}
+            memory: {{ .Values.resources.requests.memory | quote }}
+        env:
+        - name: DATAPOWER_ACCEPT_LICENSE
+          value: "true"
+        - name: DATAPOWER_INTERACTIVE
+          value: "true"
+        - name: DATAPOWER_LOG_COLOR
+          value: "false"
+        - name: DATAPOWER_WORKER_THREADS
+          value: {{ .Values.datapowerEnv.workerThreads | quote }}
+          ports:
+            {{- if .Values.sshPort }}
+          - name: {{ template "fullname" . }}-ssh
+            containerPort: 22
+            {{- end }}
+            {{- if .Values.sshPort }}
+
+          - name: {{ template "fullname" . }}-fsh
+            containerPort: 443
+            {{- end }}
+            {{- if .Values.webAdminPort }}
+
+          - name:  {{ template "fullname" . }}-adminconsole
+            containerPort: 9090
+            {{- end }}
+        volumeMounts:
+            - mountPath: "/drouter/ramdisk2/"
+              name: {{ template "fullname"  . }}-ram-disk2
+            - mountPath: "/drouter/config"
+              name: {{ template "fullname" . }}-config-volume
+
+
+      volumes:
+        - name: {{ template "fullname" . }}-ram-disk2
+          persistentVolumeClaim:
+            claimName: {{ template "fullname" . }}
+        - name: {{ template "fullname" . }}-config-volume
+          configMap:
+            name: {{ template "fullname" . }}-config
+            items:
+            - key: auto-startup.cfg
+              path: "auto-startup.cfg"
+            - key: auto-user.cfg
+              path: "auto-user.cfg"
